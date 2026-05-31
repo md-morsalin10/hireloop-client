@@ -38,6 +38,7 @@ export default function HeroSection() {
 
     return (
         <section className="relative overflow-hidden bg-black py-48 text-white">
+            
             <div className="pb-90">
                 <div className="w-full  mx-auto flex flex-col items-center text-center px-4 font-sans select-none">
 
@@ -55,7 +56,7 @@ export default function HeroSection() {
                                 </svg>
                             </div>
                         
-                            <div className="flex items-center gap-1.5 text-[11px] font-mono tracking-widest text-gray-400">
+                            <div className="flex items-center gap-1.5 text-[11px] font-mono tracking-widest text-white">
                                 <span className="text-white font-bold">50,000+</span> NEW JOBS THIS MONTH
                             </div>
                         </div>
@@ -69,7 +70,7 @@ export default function HeroSection() {
                     </h1>
 
                 
-                    <p className="text-[#9CA3AF] text-[14px] sm:text-[15.5px] font-normal leading-[1.6] max-w-135 mb-10 opacity-75">
+                    <p className="text-white text-[14px] sm:text-[15.5px] font-normal leading-[1.6] max-w-135 mb-10 opacity-75">
                         HireLoop connects top talent with world-class companies. Browse thousands of curated opportunities and land your next role — faster.
                     </p>
 
@@ -119,7 +120,7 @@ export default function HeroSection() {
             </div>
         
             <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-90"
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat "
                 style={{
                     backgroundImage: "url('/images/globe.png')",
                 }}
