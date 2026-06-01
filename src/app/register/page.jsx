@@ -10,13 +10,13 @@ import { useRouter } from 'next/navigation';
 
 const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
-    const router = useRouter()
+    const router = useRouter();
 
-    // স্টেট ছাড়াই ফর্ম সাবমিশন হ্যান্ডলার
+    // 📩 ১. ইমেইল সাইন আপ হ্যান্ডলার
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const users = Object.fromEntries(formData.entries())
+        const users = Object.fromEntries(formData.entries());
 
         console.log(users);
 
@@ -25,10 +25,9 @@ const RegisterPage = () => {
             image: users.image,
             email: users.email,
             password: users.password,
-
-        })
+        });
+        
         console.log(data);
-
 
         if (data) {
             toast.success('Sign up Successful');
@@ -37,23 +36,30 @@ const RegisterPage = () => {
         if (error) {
             toast.error(error.message);
         }
+    };
 
-
-
-        // আপনার অথেন্টিকেশন বা এপিআই লজিক এখানে দিন...
+    const handleGoogleSignIn = async () => {
+        try {
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+        } catch (err) {
+            toast.error("Google Sign-In failed. Please try again.");
+            console.error(err);
+        }
     };
 
     return (
         <section className="relative w-full min-h-screen bg-[#0B0F19] flex items-center justify-center py-40 px-4 sm:px-6 font-sans overflow-hidden select-none">
 
-            {/* 🌌 ব্যাকগ্রাউন্ড আল্ট্রা-সফট গলো ইফেক্টস */}
             <div className="absolute top-1/4 left-1/4 w-100 h-100 bg-indigo-600/3 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-1/4 right-1/4 w-100 h-100 bg-purple-600/2 rounded-full blur-[120px] pointer-events-none" />
 
-            {/* 📦 সেন্ট্রাল গ্লাস-মরফিজম কার্ড কন্টেইনার */}
-            <div className="relative z-10 w-full max-w-120 bg-[#0E1220]/70 backdrop-blur-xl border border-white/[0.05] rounded-[28px] p-8 sm:p-10 shadow-[0_30px_70px_-10px_rgba(0,0,0,0.7)]">
+           
+            <div className="relative z-10 w-full max-w-120 bg-[#0E1220]/70 backdrop-blur-xl border border-white/5 rounded-[28px] p-8 sm:p-10 shadow-[0_30px_70px_-10px_rgba(0,0,0,0.7)]">
 
-                {/* 🏷️ লোগো সেকশন */}
+          
                 <div className="flex flex-col items-center text-center mb-8">
                     <Link href="/" className="mb-5 block transition-opacity duration-150 hover:opacity-90">
                         <Image
@@ -72,17 +78,17 @@ const RegisterPage = () => {
                     </p>
                 </div>
 
-                {/* 📝 রেজিস্ট্রেশন ফর্ম */}
+        
                 <form onSubmit={handleSubmit} className="space-y-5">
 
-                    {/* ১. ফুল নেম ইনপুট */}
+    
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Full Name</label>
-                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/[0.06] rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
+                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
                             <Person className="text-gray-500 text-base shrink-0 mr-3" />
                             <input
                                 type="text"
-                                name="name" // 👈 FormData ট্র্যাক করার জন্য name এট্রিবিউট জরুরি
+                                name="name"
                                 required
                                 placeholder="John Doe"
                                 className="w-full bg-transparent text-white text-[13.5px] font-light placeholder-gray-600 outline-none"
@@ -90,14 +96,14 @@ const RegisterPage = () => {
                         </div>
                     </div>
 
-                    {/* ২. ইমেইল ইনপুট */}
+           
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Email Address</label>
-                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/[0.06] rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
+                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
                             <At className="text-gray-500 text-base shrink-0 mr-3" />
                             <input
                                 type="email"
-                                name="email" // 👈 name এট্রিবিউট
+                                name="email"
                                 required
                                 placeholder="name@example.com"
                                 className="w-full bg-transparent text-white text-[13.5px] font-light placeholder-gray-600 outline-none"
@@ -105,9 +111,10 @@ const RegisterPage = () => {
                         </div>
                     </div>
 
+                 
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Image</label>
-                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/[0.06] rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
+                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
                             <Person className="text-gray-500 text-base shrink-0 mr-3" />
                             <input
                                 type="url"
@@ -119,14 +126,13 @@ const RegisterPage = () => {
                         </div>
                     </div>
 
-                    {/* ৩. পাসওয়ার্ড ইনপুট */}
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Password</label>
-                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/[0.06] rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
+                        <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
                             <ShieldCheck className="text-gray-500 text-base shrink-0 mr-3" />
                             <input
                                 type={showPassword ? "text" : "password"}
-                                name="password" // 👈 name এট্রিবিউট
+                                name="password"
                                 required
                                 placeholder="••••••••"
                                 className="w-full bg-transparent text-white text-[13.5px] font-light placeholder-gray-600 outline-none tracking-widest"
@@ -149,8 +155,41 @@ const RegisterPage = () => {
                     </button>
                 </form>
 
-                {/* ➖ ডিভাইডার এবং সাইন ইন লিংক */}
-                <div className="mt-8 pt-6 border-t border-white/[0.04] text-center">
+         
+                <div className="relative flex py-5 items-center">
+                    <div className="grow border-t border-white/6"></div>
+                    <span className="shrink mx-4 text-gray-500 text-[12px] font-mono tracking-wider uppercase">Or continue with</span>
+                    <div className="grow border-t border-white/6"></div>
+                </div>
+
+        
+                <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    className="w-full h-12 bg-[#121624]/60 border border-white/6 hover:bg-[#161b2c] text-white text-[13.5px] font-medium rounded-xl transition-all duration-150 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-[0.99]"
+                >
+                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                        <path
+                            fill="#EA4335"
+                            d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.48 14.98 1 12 1 7.35 1 3.37 3.66 1.39 7.56l3.89 3.02C6.21 7.42 8.87 5.04 12 5.04z"
+                        />
+                        <path
+                            fill="#4285F4"
+                            d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.44h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.66 2.84c2.14-1.97 3.39-4.87 3.39-8.49z"
+                        />
+                        <path
+                            fill="#FBBC05"
+                            d="M5.28 14.58c-.23-.69-.36-1.42-.36-2.18s.13-1.49.36-2.18L1.39 5.2C.5 6.98 0 8.98 0 11s.5 4.02 1.39 5.8l3.89-3.02z"
+                        />
+                        <path
+                            fill="#34A853"
+                            d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.66-2.84c-1.01.67-2.31 1.08-4.3 1.08-3.13 0-5.79-2.38-6.74-5.54L1.39 15.8C3.37 19.7 7.35 23 12 23z"
+                        />
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <div className="mt-8 pt-6 border-t border-white/4 text-center">
                     <p className="text-gray-400 text-[13px] font-light">
                         Already have an account?{" "}
                         <Link href="/login" className="text-[#6366F1] font-medium hover:text-[#818CF8] hover:underline transition-colors duration-150">
