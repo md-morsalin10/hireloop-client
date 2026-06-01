@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const CTASection = () => {
     return (
-        <section className="relative w-full bg-black overflow-hidden py-32 sm:py-40 px-6 flex flex-col items-center justify-center font-sans select-none text-center">
+        <section className="relative w-full bg-black overflow-hidden py-39 sm:py-40 px-6 flex flex-col items-center justify-center font-sans select-none text-center">
             
             <div 
                 className="absolute inset-0 w-full h-full bg-bottom bg-no-repeat pointer-events-none transition-opacity opacity-80 duration-300"

@@ -32,12 +32,12 @@ const Navbar = () => {
 
                     <div className="h-5 w-px bg-white/10" />
 
-                    <Link href="/sign-in" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors duration-150">
+                    <Link href="/register" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors duration-150">
                         Sign In
                     </Link>
 
                     <Link
-                        href="/get-started"
+                        href="/login"
                         className="bg-[#6366F1] hover:bg-[#4F46E5] text-white text-sm font-semibold px-6 py-3 rounded-xl shadow-[0_4px_14px_0_rgba(99,102,241,0.35)] transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]"
                     >
                         Get Started
