@@ -72,7 +72,7 @@ const FeaturesSection = () => {
                 Everything you need <br /> to succeed
             </h2>
 
-            <div className="w-full max-w-7xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+            <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
                 {features.map((item, index) => {
                     const IconComponent = item.icon;
                     

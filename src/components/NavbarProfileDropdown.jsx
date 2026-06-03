@@ -54,7 +54,7 @@ const NavbarProfileDropdown = () => {
                             </Link>
                         </Dropdown.Item>
                         <Dropdown.Item id="profile" textValue="Profile">
-                            <Link href={'/my-profile'}>
+                            <Link href={'/profile'}>
                                 <Label>Profile</Label>
                             </Link>
                         </Dropdown.Item>

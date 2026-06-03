@@ -7,6 +7,7 @@ import { Eye, EyeSlash, Person, At, ShieldCheck } from "@gravity-ui/icons";
 import { authClient } from '@/lib/auth-client';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { Label, Radio, RadioGroup } from '@heroui/react';
 
 const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -25,8 +26,9 @@ const RegisterPage = () => {
             image: users.image,
             email: users.email,
             password: users.password,
+            role: users.role
         });
-        
+
         console.log(data);
 
         if (data) {
@@ -56,10 +58,10 @@ const RegisterPage = () => {
             <div className="absolute top-1/4 left-1/4 w-100 h-100 bg-indigo-600/3 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-1/4 right-1/4 w-100 h-100 bg-purple-600/2 rounded-full blur-[120px] pointer-events-none" />
 
-           
+
             <div className="relative z-10 w-full max-w-120 bg-[#0E1220]/70 backdrop-blur-xl border border-white/5 rounded-[28px] p-8 sm:p-10 shadow-[0_30px_70px_-10px_rgba(0,0,0,0.7)]">
 
-          
+
                 <div className="flex flex-col items-center text-center mb-8">
                     <Link href="/" className="mb-5 block transition-opacity duration-150 hover:opacity-90">
                         <Image
@@ -78,10 +80,10 @@ const RegisterPage = () => {
                     </p>
                 </div>
 
-        
+
                 <form onSubmit={handleSubmit} className="space-y-5">
 
-    
+                    {/* name */}
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Full Name</label>
                         <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
@@ -96,7 +98,7 @@ const RegisterPage = () => {
                         </div>
                     </div>
 
-           
+                    {/* email */}
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Email Address</label>
                         <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
@@ -111,21 +113,21 @@ const RegisterPage = () => {
                         </div>
                     </div>
 
-                 
+                    {/* image */}
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Image</label>
                         <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
                             <Person className="text-gray-500 text-base shrink-0 mr-3" />
                             <input
                                 type="url"
-                                name="image" 
+                                name="image"
                                 required
                                 placeholder="Enter image url"
                                 className="w-full bg-transparent text-white text-[13.5px] font-light placeholder-gray-600 outline-none"
                             />
                         </div>
                     </div>
-
+                    {/* password */}
                     <div className="flex flex-col gap-2">
                         <label className="text-gray-300 text-[13px] font-medium tracking-wide">Password</label>
                         <div className="relative w-full h-12 bg-[#121624]/60 border border-white/6 rounded-xl flex items-center px-4 transition-all duration-200 focus-within:border-indigo-500/50 focus-within:shadow-[0_0_12px_rgba(99,102,241,0.15)]">
@@ -146,7 +148,28 @@ const RegisterPage = () => {
                             </button>
                         </div>
                     </div>
-
+                    {/* role */}
+                    <div className="flex flex-col text-white gap-4">
+                        <Label className='text-white'>Select Role</Label>
+                        <RadioGroup defaultValue="seeker" name="role" orientation="horizontal">
+                            <Radio value="seeker">
+                                <Radio.Control>
+                                    <Radio.Indicator />
+                                </Radio.Control>
+                                <Radio.Content>
+                                    <Label className='text-white' >Seeker</Label>
+                                </Radio.Content>
+                            </Radio>
+                            <Radio value="recruiter">
+                                <Radio.Control>
+                                    <Radio.Indicator />
+                                </Radio.Control>
+                                <Radio.Content>
+                                    <Label className='text-white'>Recruiter</Label>
+                                </Radio.Content>
+                            </Radio>
+                        </RadioGroup>
+                    </div>
                     <button
                         type="submit"
                         className="w-full h-12 bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[14px] font-semibold rounded-xl shadow-[0_4px_20px_rgba(99,102,241,0.25)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.35)] transition-all duration-200 flex items-center justify-center gap-2 mt-2 hover:scale-[1.01] active:scale-[0.99]"
@@ -155,14 +178,14 @@ const RegisterPage = () => {
                     </button>
                 </form>
 
-         
+
                 <div className="relative flex py-5 items-center">
                     <div className="grow border-t border-white/6"></div>
                     <span className="shrink mx-4 text-gray-500 text-[12px] font-mono tracking-wider uppercase">Or continue with</span>
                     <div className="grow border-t border-white/6"></div>
                 </div>
 
-        
+
                 <button
                     type="button"
                     onClick={handleGoogleSignIn}
