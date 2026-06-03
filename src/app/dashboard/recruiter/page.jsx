@@ -1,4 +1,5 @@
 'use client';
+import RecruiterOverview from "@/components/Dashboard/RecruiterOverview";
 import StatsGrid from "@/components/Dashboard/StatsGrid";
 import { authClient } from "@/lib/auth-client";
 import { FiBriefcase, FiSend, FiBookmark, FiCheckCircle } from "react-icons/fi";
@@ -18,9 +19,10 @@ const RecruiterPage = () => {
         { label: "Jobs Closed", value: "340", icon: FiBriefcase },
     ];
     return (
-        <div>
+        <div className="py-6">
             <h2 className="text-2xl font-semibold mb-6">Welcome back, {user?.name}!</h2>
             <StatsGrid statsData={RecruiterStats} />
+            <RecruiterOverview />
         </div>
     );
 };
