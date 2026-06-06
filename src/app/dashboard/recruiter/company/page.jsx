@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { TextField, Input, TextArea, Label, ListBox, Button, Select } from "@heroui/react";
 import { FiBriefcase, FiGlobe, FiMapPin, FiUsers, FiEdit3, FiPlusCircle, FiChevronDown, FiAlertCircle, FiImage } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { getCompany } from "@/lib/action/company";
 
 export default function MyCompany() {
     // 🏢 মেইন কোম্পানি স্টেট (ডাটাবেজ থেকে ডেটা না আসা পর্যন্ত শুরুতে null থাকবে)
@@ -115,6 +116,12 @@ export default function MyCompany() {
             status: "pending" 
         };
         
+        const payload = getCompany(companyPayload);
+
+        if(payload.InsertedId) {
+            toast.success("Company registered successfully!");
+        }
+
         console.log("Final Company Payload to Save:", companyPayload); // ডিবাগিং এর জন্য লগ
         try {
             // 🌐 আপনার ব্যাকএন্ড API এন্ডপয়েন্ট কানেকশন এখানে হবে:
