@@ -7,10 +7,20 @@ import { TextField, Input, TextArea, Select, Label, ListBox, Button, Switch } fr
 import { FiBriefcase, FiDollarSign, FiMapPin, FiCalendar, FiClock, FiChevronDown } from "react-icons/fi";
 import { createJob } from "@/lib/action/jobs";
 import toast from "react-hot-toast";
+// redirect-এর বদলে useRouter ব্যবহার করা হয়েছে ক্লায়েন্ট সাইড রিডাইরেকশনের জন্য
+import { useRouter } from "next/navigation"; 
 
 export default function NewJobForm() {
+    const router = useRouter(); 
+
+    // ডেমো ডেটা: সাধারণত এগুলো API বা প্রপ্স থেকে আসে
+    const companiesList = [
+        { id: "comp_01", name: "TechLoop Inc." },
+        { id: "comp_02", name: "DevZone Studio" },
+        { id: "comp_03", name: "CloudNext Ltd." }
+    ];
+
     const autoFilledCompany = {
-        name: "TechLoop Inc.",
         isApproved: true,
     };
 
@@ -21,6 +31,7 @@ export default function NewJobForm() {
     const [category, setCategory] = useState("");
     const [jobType, setJobType] = useState("");
     const [currency, setCurrency] = useState("USD");
+    const [selectedCompanyId, setSelectedCompanyId] = useState(""); // কোম্পানি আইডি স্টেট
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,8 +40,17 @@ export default function NewJobForm() {
             return;
         }
 
+        if (!selectedCompanyId) {
+            toast.error("Please select a company!");
+            return;
+        }
+
         setLoading(true);
         const formData = new FormData(e.target);
+        
+        // সিলেক্টেড আইডি দিয়ে কোম্পানির নাম বের করা
+        const currentCompany = companiesList.find(c => c.id === selectedCompanyId);
+
         const jobData = {
             title: formData.get("jobTitle"),
             category: category,
@@ -44,22 +64,42 @@ export default function NewJobForm() {
             responsibilities: formData.get("responsibilities"),
             requirements: formData.get("requirements"),
             benefits: formData.get("benefits"),
-            company: autoFilledCompany.name,
+            companyId: selectedCompanyId,            
+            companyName: currentCompany?.name || "",  
             status: "active",
             isPublic: true,
         };
 
-        const res = await createJob(jobData);
+        // রিডাইরেকশনের সঠিক ট্র্যাক রাখার জন্য স্টেট বা ভেরিয়েবল
+        let isSuccess = false;
 
-        if (res.insertedId) {
-            toast.success("Job posted successfully!");
-            e.target.reset();
-            setCategory("");
-            setJobType("");
-            setCurrency("USD");
-            setIsRemote(false);
-        } else {
-            toast.error("Failed to post job. Please try again.");
+        try {
+            const res = await createJob(jobData);
+
+            if (res?.insertedId) {
+                toast.success("Job posted successfully!");
+                e.target.reset();
+                setCategory("");
+                setJobType("");
+                setCurrency("USD");
+                setSelectedCompanyId("");
+                setIsRemote(false);
+                
+                // সাকসেস ট্রু করে দিচ্ছি যাতে ক্যাচ ব্লকের বাইরে রিডাইরেক্ট হতে পারে
+                isSuccess = true; 
+            } else {
+                toast.error("Failed to post job. Please try again.");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("An error occurred. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+
+        // try-catch ব্লকের সম্পূর্ণ বাইরে এসে রাউটার পুশ করা হলো
+        if (isSuccess) {
+            router.push("/dashboard/recruiter/jobs");
         }
     };
 
@@ -222,14 +262,13 @@ export default function NewJobForm() {
                             </TextField>
                         </div>
 
-                        {/* 🎯 ১০০% গ্যারান্টেড ওয়ার্কিং কাস্টম কম্পাউন্ড সুইচ লেআউট */}
+                        {/* Switch Toggle */}
                         <div className="h-12 flex items-center pb-1">
                             <Switch
                                 isSelected={isRemote}
                                 aria-label="Toggle Remote Job"
                                 className="cursor-pointer"
                             >
-                                {/* সরাসরি কন্ট্রোলে ক্লিক করলে টগল হ্যান্ডেল হবে কোনো এরর ছাড়াই */}
                                 <Switch.Control onClick={() => setIsRemote(!isRemote)}>
                                     <Switch.Thumb />
                                 </Switch.Control>
@@ -300,14 +339,33 @@ export default function NewJobForm() {
                     </div>
                 </div>
 
-                {/* ================= SECTION 4: AUTO-FILLED COMPANY INFO ================= */}
-                <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl flex justify-between items-center text-xs text-gray-400">
-                    <div>
-                        Posting as: <span className="font-semibold text-white ml-1">{autoFilledCompany.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                        Approved Recruiter
+                {/* ================= SECTION 4: COMPANY SELECTION ================= */}
+                <div className="space-y-4">
+                    <h3 className="text-sm font-semibold tracking-wider text-gray-400 uppercase flex items-center gap-2">
+                        <FiBriefcase /> Company Details
+                    </h3>
+                    <div className="flex flex-col">
+                        <Label className={labelClass}>Select Company <span className="text-red-500">*</span></Label>
+                        <Select placeholder="Choose a company" value={selectedCompanyId} onChange={setSelectedCompanyId}>
+                            <Select.Trigger className={selectTriggerClass}>
+                                <Select.Value />
+                                <Select.Indicator><FiChevronDown className="text-gray-500" /></Select.Indicator>
+                            </Select.Trigger>
+                            <Select.Popover className="bg-[#1A1A1A] border border-white/5 rounded-xl text-white">
+                                <ListBox>
+                                    {companiesList.map((company) => (
+                                        <ListBox.Item 
+                                            key={company.id} 
+                                            id={company.id} 
+                                            textValue={company.name} 
+                                            className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm"
+                                        >
+                                            {company.name}
+                                        </ListBox.Item>
+                                    ))}
+                                </ListBox>
+                            </Select.Popover>
+                        </Select>
                     </div>
                 </div>
 
