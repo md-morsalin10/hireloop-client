@@ -1,4 +1,3 @@
-"use client"
 
 const API_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
 export const createJob = async (data) => {
