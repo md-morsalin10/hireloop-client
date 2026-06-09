@@ -3,12 +3,13 @@ import React from 'react';
 import { Chip, Table, Button, Tooltip } from "@heroui/react";
 // অ্যাকশন বাটনের জন্য আইকন ইম্পোর্ট
 import { FiEye, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { getLoggedInRecruiterCompany } from '@/lib/api/company';
 
 const RecruiterJobs = async () => {
-    const companyId = "comp_02"; // Actual company ID থেকে লোড হচ্ছে
-    const jobs = await getCompanyJobs(companyId);
+    const company = await getLoggedInRecruiterCompany();
+    const jobs = await getCompanyJobs(company._id);
 
-    // স্ট্যাটাস অনুযায়ী চিপের কালার সেট করার হেল্পার ফাংশন
+    // স্ট্যাটাস অনুযায়ী চিপের কালার সেট করার হেল্পার ফাংশন
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
             case "active":

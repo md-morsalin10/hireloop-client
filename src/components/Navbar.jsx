@@ -41,6 +41,9 @@ const Navbar = () => {
                     <div className="h-5 w-px bg-white/10" />
 
                     {user ? <>
+                       <h2 className="text-white text-sm font-medium">
+                            Hello, {user?.name}
+                        </h2>
                        <NavbarProfileDropdown/>
                     </> : <>
                         <Link href="/register" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors duration-150">

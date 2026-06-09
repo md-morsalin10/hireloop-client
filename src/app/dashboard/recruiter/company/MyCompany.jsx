@@ -130,7 +130,7 @@ export default function MyCompany({ recruiter, recruiterCompany }) {
     // =================================================================
     // ১. ভিউ: নো কোম্পানি স্টেট
     // =================================================================
-    if (!company && !isEditing) {
+    if (!company?._id && !isEditing) {
         return (
             <div className="w-full max-w-2xl mx-auto my-12 p-8 bg-[#121212] border border-white/5 rounded-2xl text-center font-sans">
                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10">
