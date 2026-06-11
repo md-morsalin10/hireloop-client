@@ -6,12 +6,14 @@ import Image from "next/image";
 import { Eye, EyeSlash, Person, At, ShieldCheck } from "@gravity-ui/icons";
 import { authClient } from '@/lib/auth-client';
 import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Label, Radio, RadioGroup } from '@heroui/react';
 
 const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/';
 
     // 📩 ১. ইমেইল সাইন আপ হ্যান্ডলার
     const handleSubmit = async (e) => {
@@ -33,7 +35,7 @@ const RegisterPage = () => {
 
         if (data) {
             toast.success('Sign up Successful');
-            router.push("/login");
+            router.push(redirectTo); // Redirect to the intended page after successful registration
         }
         if (error) {
             toast.error(error.message);
@@ -215,7 +217,7 @@ const RegisterPage = () => {
                 <div className="mt-8 pt-6 border-t border-white/4 text-center">
                     <p className="text-gray-400 text-[13px] font-light">
                         Already have an account?{" "}
-                        <Link href="/login" className="text-[#6366F1] font-medium hover:text-[#818CF8] hover:underline transition-colors duration-150">
+                        <Link href={`/login?redirect=${redirectTo}`} className="text-[#6366F1] font-medium hover:text-[#818CF8] hover:underline transition-colors duration-150">
                             Sign In
                         </Link>
                     </p>

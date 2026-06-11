@@ -6,11 +6,13 @@ import Image from "next/image";
 import { Eye, EyeSlash, At, ShieldCheck } from "@gravity-ui/icons";
 import { authClient } from '@/lib/auth-client';
 import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/';
 
 
     const handleSubmit = async(e) => {
@@ -27,7 +29,7 @@ const LoginPage = () => {
         
         if (data) {
             toast.success('Login Successful');
-            router.push("/");
+            router.push(redirectTo); // Redirect to the intended page after successful login
         }
         if (error) {
             toast.error(error.message);
@@ -160,7 +162,7 @@ const LoginPage = () => {
                 <div className="mt-8 pt-6 border-t border-white/4 text-center">
                     <p className="text-gray-400 text-[13px] font-light">
                         Dont have an account?{" "}
-                        <Link href="/register" className="text-[#6366F1] font-medium hover:text-[#818CF8] hover:underline transition-colors duration-150">
+                        <Link href={`/register?redirect=${redirectTo}`} className="text-[#6366F1] font-medium hover:text-[#818CF8] hover:underline transition-colors duration-150">
                             Sign Up
                         </Link>
                     </p>
