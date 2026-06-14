@@ -2,40 +2,58 @@
 
 import React, { useState } from "react";
 import { Form, TextField, Label, Input, FieldError, Button } from "@heroui/react";
+import toast from "react-hot-toast";
+import { getApplicants } from "@/lib/action/application";
 
-// jobTitle প্রপ্সটি এখানে অ্যাড করা হয়েছে
-export default function ApplyForm({ job, userEmail }) {
+export default function ApplyForm({ job, user}) {
   const [resumeName, setResumeName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // ফর্ম রিসেট করার জন্য একটি ডেডিকেটেড ফাংশন
+  const handleFormReset = (formElement) => {
+    if (formElement) {
+      formElement.reset(); // নেটিভ ইনপুট রিসেট
+    }
+    setResumeName(""); // ফাইলের নাম স্টেট ক্লিয়ার
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const formData = new FormData(e.currentTarget);
+    const currentForm = e.currentTarget;
+    const formData = new FormData(currentForm);
     
-    // ১. Job আইডি এবং টাইটেল অ্যাপেন্ড করা হচ্ছে
-    formData.append("jobId", job?.id);
+    formData.append("jobId", job?._id);
+    formData.append("companyName", job?.companyName || "Unknown Company");
     formData.append("jobTitle", job?.title || "Software Engineer"); 
-
-    // ২. Applicant-এর ইমেইল অ্যাপেন্ড করা হচ্ছে (যেহেতু ইমেল ফিল্ডটি ReadOnly)
-    formData.append("applicantEmail", userEmail);
+    formData.append("applicantEmail", user?.email);
+    formData.append("applicantId", user?._id);
 
     try {
       console.log("Submitting application data...");
       
-      // কনসোলে চেক করার জন্য অবজেক্ট ফরম্যাট:
       const plainData = {};
       formData.forEach((value, key) => {
-        plainData[key] = value instanceof File ? value.name : value;
+        // ফাইল অবজেক্টকে সরাসরি বা তার নাম ট্র্যাকিং হ্যান্ডেল করা হচ্ছে
+        plainData[key] = value instanceof File ? value : value;
       });
+
+      // সার্ভার অ্যাকশনে ডেটা পাঠানো হচ্ছে
+      const res = await getApplicants(plainData);
+      console.log("API Response:", res);
+
+      // আপনার ডেটাবেজের রেসপন্স স্ট্রাকচার অনুযায়ী চেক (res?.insertedId অথবা res?.success)
+      if (res && (res.insertedId || res.success)) {
+        toast.success("Application submitted successfully!");
+        handleFormReset(currentForm); // সফল হলে ফর্ম রিসেট হবে
+      } else {
+        toast.error("Failed to submit application. Please try again.");
+      }
       
-      // এখানে আপনার applicant name (fullName), applicant email, jobId, jobTitle সব একসাথে পাবেন
-      console.log("Final Payload to API:", plainData);
-      
-      // const res = await fetch('/api/jobs/apply', { method: 'POST', body: formData });
     } catch (error) {
-      console.error(error);
+      console.error("Submission Error:", error);
+      toast.error("Something went wrong. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -47,13 +65,12 @@ export default function ApplyForm({ job, userEmail }) {
         className="w-full max-w-3xl bg-[#0a0a0c] border border-[#1a1a1e] rounded-[24px] p-8 md:p-10 shadow-[0_24px_60px_rgba(0,0,0,0.8)] flex flex-col gap-6 text-white transition-all duration-300" 
         onSubmit={onSubmit}
       >
-        {/* ফর্মের ওপরে কোন পজিশনে অ্যাপ্লাই করছে তা ডায়নামিকালি দেখানোর জন্য */}
         <div className="border-b border-[#1a1a1e] pb-4 mb-2">
           <p className="text-xs text-[#bf5af2] font-semibold uppercase tracking-wider">Applying For</p>
           <h1 className="text-xl font-bold text-[#f5f5f7] mt-0.5">{job?.title || "Loading Position..."}</h1>
         </div>
         
-        {/* Full Name Field (যা ব্যাকএন্ডে applicant name হিসেবে যাবে) */}
+        {/* Full Name Field */}
         <TextField isRequired name="fullName">
           <Label className="text-[11px] font-bold uppercase tracking-widest text-[#86868b] mb-1">Full Name</Label>
           <Input 
@@ -65,7 +82,7 @@ export default function ApplyForm({ job, userEmail }) {
 
         {/* Email & Phone Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
-          <TextField isReadOnly name="email" defaultValue={userEmail}>
+          <TextField isReadOnly name="email" defaultValue={user?.email || ""}>
             <Label className="text-[11px] font-bold uppercase tracking-widest text-[#86868b] mb-1">Email Address</Label>
             <Input 
               className="w-full h-12 bg-[#161619]/40 border border-[#1c1c1f] rounded-xl text-sm text-[#636366] cursor-not-allowed"
@@ -161,7 +178,7 @@ export default function ApplyForm({ job, userEmail }) {
           </Button>
           <Button 
             type="reset" 
-            onClick={() => setResumeName("")}
+            onClick={(e) => handleFormReset(e.currentTarget.form)}
             className="h-12 px-6 bg-transparent border border-[#222226] text-[#a1a1aa] hover:text-white hover:bg-[#1c1c1f] font-medium rounded-xl text-sm transition-colors duration-200"
           >
             Reset
