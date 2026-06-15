@@ -23,12 +23,15 @@ const RegisterPage = () => {
 
         console.log(users);
 
+        const plan = users.role === "seeker" ? "seeker_free" : "recruiter_free";
+
         const { data, error } = await authClient.signUp.email({
             name: users.name,
             image: users.image,
             email: users.email,
             password: users.password,
-            role: users.role
+            role: users.role,
+            plan: plan
         });
 
         console.log(data);

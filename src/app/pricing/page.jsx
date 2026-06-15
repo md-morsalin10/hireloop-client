@@ -9,6 +9,7 @@ export default function PricingPage() {
   const seekerPlans = [
     {
       name: "Free",
+      id:"seeker_free",
       price: "$0",
       period: "/forever",
       description: "Perfect for exploring the platform and starting your search.",
@@ -23,7 +24,8 @@ export default function PricingPage() {
     },
     {
       name: "Pro",
-      price: "$19",
+      id: "seeker_pro",
+      price: "$19.99",
       period: "/month",
       description: "Accelerate your job hunt with advanced tracking tools.",
       features: [
@@ -37,7 +39,8 @@ export default function PricingPage() {
     },
     {
       name: "Premium",
-      price: "$39",
+      id: "seeker_premium",
+      price: "$39.99",
       period: "/month",
       description: "Ultimate visibility and priority tools for top professionals.",
       features: [
@@ -55,6 +58,7 @@ export default function PricingPage() {
   const recruiterPlans = [
     {
       name: "Free",
+      id:"recruiter_free",
       price: "$0",
       period: "/forever",
       description: "Great for a company's first year of hiring and testing features.",
@@ -68,7 +72,8 @@ export default function PricingPage() {
     },
     {
       name: "Growth",
-      price: "$49",
+      id:"recruiter_pro",
+      price: "$49.99",
       period: "/month",
       description: "Perfect for expanding teams needing better candidate insights.",
       features: [
@@ -82,7 +87,8 @@ export default function PricingPage() {
     },
     {
       name: "Enterprise",
-      price: "$149",
+      id:"recruiter_premium",
+      price: "$129.99",
       period: "/month",
       description: "Complete hiring suite for high-volume recruitment needs.",
       features: [
@@ -224,6 +230,7 @@ export default function PricingPage() {
             <div className="mt-8">
 
               <form action="/api/checkout_sessions" method="POST">
+                <input type="hidden" name="plan_id" value={plan.id} />
                 <section>
                   <button type="submit" role="link"
                    className={`w-full h-11 text-xs md:text-sm font-semibold rounded-xl tracking-wide transition-all duration-200 active:scale-[0.98] ${plan.featured
