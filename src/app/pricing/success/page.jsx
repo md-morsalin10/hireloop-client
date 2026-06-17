@@ -2,6 +2,8 @@ import { stripe } from '@/lib/stripe'
 import { redirect } from 'next/navigation'
 import { Card, Button } from '@heroui/react'
 import Link from 'next/link'
+import { createSubscription } from '@/lib/action/subscription'
+
 
 export default async function Success({ searchParams }) {
   const { session_id } = await searchParams
@@ -14,14 +16,23 @@ export default async function Success({ searchParams }) {
     expand: ['line_items', 'payment_intent']
   })
 
-  const { status, customer_details, id: transactionId } = session
+  const { status, customer_details, id: transactionId, metadata } = session
   const customerEmail = customer_details?.email
+
+  
 
   if (status === 'open') {
     return redirect('/')
   }
 
   if (status === 'complete') {
+    const subsInfo = {
+      email: customerEmail,
+      planId: metadata.planId
+    }
+    const result = await createSubscription(subsInfo);
+    console.log(result)
+    // update 
     return (
       <div className="min-h-screen bg-black text-white pt-32 pb-20 px-4 md:px-8 flex flex-col items-center justify-center relative overflow-hidden select-none">
         

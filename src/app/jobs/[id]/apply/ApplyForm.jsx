@@ -5,16 +5,17 @@ import { Form, TextField, Label, Input, FieldError, Button } from "@heroui/react
 import toast from "react-hot-toast";
 import { getApplicants } from "@/lib/action/application";
 
-export default function ApplyForm({ job, user}) {
+// user-এর পরিবর্তে প্যারেন্ট কম্পোনেন্ট থেকে আসা userEmail প্রপ্স রিসিভ করা হলো
+export default function ApplyForm({ job, userEmail }) {
   const [resumeName, setResumeName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ফর্ম রিসেট করার জন্য একটি ডেডিকেটেড ফাংশন
+  // ফর্ম রিসেট করার ফাংশন
   const handleFormReset = (formElement) => {
     if (formElement) {
-      formElement.reset(); // নেটিভ ইনপুট রিসেট
+      formElement.reset(); 
     }
-    setResumeName(""); // ফাইলের নাম স্টেট ক্লিয়ার
+    setResumeName(""); 
   };
 
   const onSubmit = async (e) => {
@@ -24,18 +25,17 @@ export default function ApplyForm({ job, user}) {
     const currentForm = e.currentTarget;
     const formData = new FormData(currentForm);
     
+    // ডাটাবেজ ও ব্যাকএন্ড কুয়েরির সাথে মিল রেখে সঠিক ফিল্ড অ্যাপেন্ড করা হচ্ছে
     formData.append("jobId", job?._id);
     formData.append("companyName", job?.companyName || "Unknown Company");
     formData.append("jobTitle", job?.title || "Software Engineer"); 
-    formData.append("applicantEmail", user?.email);
-    formData.append("applicantId", user?._id);
+    formData.append("email", userEmail); // ডাটাবেজে সরাসরি 'email' ফিল্ডে স্টোর হবে
 
     try {
       console.log("Submitting application data...");
       
       const plainData = {};
       formData.forEach((value, key) => {
-        // ফাইল অবজেক্টকে সরাসরি বা তার নাম ট্র্যাকিং হ্যান্ডেল করা হচ্ছে
         plainData[key] = value instanceof File ? value : value;
       });
 
@@ -43,10 +43,12 @@ export default function ApplyForm({ job, user}) {
       const res = await getApplicants(plainData);
       console.log("API Response:", res);
 
-      // আপনার ডেটাবেজের রেসপন্স স্ট্রাকচার অনুযায়ী চেক (res?.insertedId অথবা res?.success)
       if (res && (res.insertedId || res.success)) {
         toast.success("Application submitted successfully!");
         handleFormReset(currentForm); // সফল হলে ফর্ম রিসেট হবে
+        
+        // কাউন্টার সাথে সাথে আপডেট দেখার জন্য পেজ রিফ্রেশ করা যেতে পারে
+        window.location.reload();
       } else {
         toast.error("Failed to submit application. Please try again.");
       }
@@ -55,7 +57,7 @@ export default function ApplyForm({ job, user}) {
       console.error("Submission Error:", error);
       toast.error("Something went wrong. Please check your connection.");
     } finally {
-      setLoading(false);
+      loading(false);
     }
   };
 
@@ -82,7 +84,8 @@ export default function ApplyForm({ job, user}) {
 
         {/* Email & Phone Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
-          <TextField isReadOnly name="email" defaultValue={user?.email || ""}>
+          {/* defaultValue তে সরাসরি userEmail ব্যবহার করা হলো */}
+          <TextField isReadOnly name="email" defaultValue={userEmail || ""}>
             <Label className="text-[11px] font-bold uppercase tracking-widest text-[#86868b] mb-1">Email Address</Label>
             <Input 
               className="w-full h-12 bg-[#161619]/40 border border-[#1c1c1f] rounded-xl text-sm text-[#636366] cursor-not-allowed"

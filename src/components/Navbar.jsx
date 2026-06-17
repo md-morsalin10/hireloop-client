@@ -6,11 +6,38 @@ import Image from "next/image";
 import { authClient } from '@/lib/auth-client';
 import { Avatar } from '@heroui/react';
 import NavbarProfileDropdown from './NavbarProfileDropdown';
+import { label } from 'motion/react-client';
 
 const Navbar = () => {
     const { data: session, isPending } = authClient.useSession();
     const user = session?.user
-    console.log(user);
+    // console.log(user);
+    const navLinks = [
+        {
+            label: "Browse jobs",
+            href: "/jobs"
+        },
+        {
+            label: "Company",
+            href: "/company"
+        },
+        {
+            label: "Pricing",
+            href: "/pricing"
+        },
+    ]
+
+    const dashboardLinks = {
+        seeker: "/dashboard/seeker",
+        recruiter: "/dashboard/recruiter"
+    }
+
+    if (user?.email) {
+        navLinks.push({
+            label: "Dashboard",
+            href: dashboardLinks[user?.role || "seeker"]
+        })
+    }
 
 
     return (
@@ -28,23 +55,18 @@ const Navbar = () => {
                 </Link>
 
                 <div className="flex items-center gap-8">
-                    <Link href="/jobs" className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors duration-150">
-                        Browse Jobs
-                    </Link>
-                    <Link href="/company" className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors duration-150">
-                        Company
-                    </Link>
-                    <Link href="/pricing" className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors duration-150">
-                        Pricing
-                    </Link>
+                    {navLinks.map((data, index) => <Link key={index} href={data.href} className="text-[#9CA3AF] hover:text-white text-sm font-medium transition-colors duration-150">
+                        {data.label}
+                    </Link>)}
+
 
                     <div className="h-5 w-px bg-white/10" />
 
                     {user ? <>
-                       <h2 className="text-white text-sm font-medium">
+                        <h2 className="text-white text-sm font-medium">
                             Hello, {user?.name}
                         </h2>
-                       <NavbarProfileDropdown/>
+                        <NavbarProfileDropdown />
                     </> : <>
                         <Link href="/register" className="text-[#6366F1] hover:text-[#818CF8] text-sm font-semibold transition-colors duration-150">
                             Sign In

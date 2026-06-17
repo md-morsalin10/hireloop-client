@@ -1,12 +1,16 @@
 
-import { Bars,  CirclePlus,  Envelope, Gear, House, Magnifier } from "@gravity-ui/icons";
+import { getUserSeason } from "@/lib/core/session";
+import { Bars, Bookmark, CirclePlus, CreditCard, Envelope, FileText, Gear, House, Magnifier } from "@gravity-ui/icons";
 import { Button, Drawer } from "@heroui/react";
-import { div } from "motion/react-client";
 import Link from "next/link";
+import { MdDashboardCustomize } from "react-icons/md";
 import { RiProfileLine } from "react-icons/ri";
 
-export function DashboardSidebar() {
-    const navItems = [
+export async function DashboardSidebar() {
+
+    const user = await getUserSeason()
+    
+    const recruiterItems = [
         { icon: House, href: "/dashboard/recruiter", label: "Home" },
         { icon: Magnifier, href: "/dashboard/recruiter/jobs", label: "Jobs" },
         { icon: CirclePlus, href: "/dashboard/recruiter/jobs/new", label: "Post a Job" },
@@ -14,6 +18,47 @@ export function DashboardSidebar() {
         { icon: Envelope, href: "/dashboard/recruiter/messages", label: "Messages" },
         { icon: Gear, href: "/dashboard/recruiter/settings", label: "Settings" },
     ];
+
+    const seekerNavItems = [
+        {
+            icon: MdDashboardCustomize, // বা আপনার প্রজেক্টের গ্রিড আইকনটি (যেমন: Grid, Squares2x2)
+            href: "/dashboard/seeker",
+            label: "Dashboard"
+        },
+        {
+            icon: Magnifier, // অথবা Search আইকন
+            href: "/dashboard/seeker/jobs",
+            label: "Jobs"
+        },
+        {
+            icon: Bookmark, // অথবা Ribbon, BookMarked আইকনটি Saved Jobs এর জন্য
+            href: "/dashboard/seeker/saved-jobs",
+            label: "Saved Jobs"
+        },
+        {
+            icon: FileText, // অথবা Briefcase / Description আইকন Applications এর জন্য
+            href: "/dashboard/seeker/applications",
+            label: "Applications"
+        },
+        {
+            icon: CreditCard, // অথবা Wallet / Banknotes আইকন Billing এর জন্য
+            href: "/dashboard/seeker/billing",
+            label: "Billing"
+        },
+        {
+            icon: Gear, // অথবা Settings/Sun আইকন 
+            href: "/dashboard/seeker/settings",
+            label: "Settings"
+        }
+    ];
+
+    const navLinksMap = {
+        seeker: seekerNavItems,
+        recruiter: recruiterItems
+    }
+
+    const navItems = navLinksMap[user?.role]
+
 
     const navContent = <nav className="flex flex-col gap-1">
         {navItems.map((item) => (
@@ -30,9 +75,9 @@ export function DashboardSidebar() {
 
     return (
         <>
-           <aside className="hidden lg:block w-64 flex-shrink-0 border-r border-divider" >
-               {navContent}
-           </aside>
+            <aside className="hidden lg:block w-64 flex-shrink-0 border-r border-divider" >
+                {navContent}
+            </aside>
             <Drawer>
                 <Button className={'lg:hidden'} variant="secondary">
                     <Bars />

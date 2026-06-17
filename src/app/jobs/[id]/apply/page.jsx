@@ -5,17 +5,18 @@ import ApplyForm from './ApplyForm';
 import { getJobById } from '@/lib/api/job';
 import { getApplicationsByApplicantId } from '@/lib/api/application';
 import Link from 'next/link';
+import { getPlanById } from '@/lib/api/plan';
 
 const ApplyPage = async ({ params }) => {
     const { id } = await params;
     const user = await getUserSeason();
-    const job = await getJobById(id);
-    const applicant = await getApplicationsByApplicantId(user?._id);
     
+    // ১. ইউজার লগইন না থাকলে রিডাইরেক্ট
     if (!user) {
         redirect(`/login?redirect=/jobs/${id}/apply`); 
     }
 
+    // ২. ইউজার রোল 'seeker' না হলে অ্যাক্সেস ডেনাইড
     if (user.role !== 'seeker') {
         return (
             <div className='text-center h-[70vh] flex flex-col items-center justify-center px-4 bg-black text-white'>
@@ -34,17 +35,28 @@ const ApplyPage = async ({ params }) => {
             </div>  
         );
     }
-    
-    const plan = {
-        name: "Basic Plan",
-        maxApplications: 3
-    };
 
-    const currentCount = applicant?.length || 0;
-    const isLimitReached = currentCount >= plan.maxApplications;
+    // API ডাটা ফেচিং
+    const job = await getJobById(id);
+    const applicant = await getApplicationsByApplicantId(user?.email);
+    const planData = await getPlanById(user?.plan || "seeker_free");
+
+    console.log("Applicant Data:", applicant);
+    console.log("User Plan Data:", planData);
+    
+    // ৩. সেফগার্ড চেক: Next.js র‍্যাপার অ্যারে থেকে সঠিক লেন্থ বা কাউন্ট নেওয়া
+    const currentCount = Array.isArray(applicant) ? applicant.length : 0;
+
+    // ৪. কনসোল ইমেজ অনুযায়ী dynamic plan ডেটা রিড করা (planData[0] থেকে)
+    const activePlan = Array.isArray(planData) && planData.length > 0 ? planData[0] : null;
+    
+    const planName = activePlan?.name || "Basic Plan";
+    const maxApplications = activePlan?.maxApplicationPerMonth || 3; // ইমেজ অনুযায়ী key হলো maxApplicationPerMonth
+
+    const isLimitReached = currentCount >= maxApplications;
     
     // প্রোগ্রেস বারের পার্সেন্টেজ ক্যালকুলেশন
-    const progressPercentage = Math.min((currentCount / plan.maxApplications) * 100, 100);
+    const progressPercentage = Math.min((currentCount / maxApplications) * 100, 100);
 
     return (
         <div className="min-h-screen bg-black pt-24 pb-16 px-4 flex flex-col items-center justify-start">
@@ -69,20 +81,20 @@ const ApplyPage = async ({ params }) => {
                         <div className="flex items-center gap-2">
                             <h3 className="text-[#e5e5ea] text-base font-semibold">Application Usage</h3>
                             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-[#2c2c2e] text-[#a1a1aa] rounded-md">
-                                {plan.name}
+                                {planName}
                             </span>
                         </div>
                         <p className="text-[#86868b] text-xs mt-1">
                             {isLimitReached 
-                                ? "You have reached your free plan limit. Upgrade to continue applying." 
-                                : `You can apply ${plan.maxApplications - currentCount} more times on your current cycle.`
+                                ? `You have reached your ${planName} limit. Upgrade to continue applying.` 
+                                : `You can apply ${maxApplications - currentCount} more times on your current cycle.`
                             }
                         </p>
                     </div>
                     
                     <div className="sm:text-right flex sm:flex-col items-baseline sm:items-end gap-1.5 shrink-0">
                         <span className="text-2xl font-bold text-white">
-                            {currentCount} <span className="text-sm font-normal text-[#636366]">/ {plan.maxApplications}</span>
+                            {currentCount} <span className="text-sm font-normal text-[#636366]">/ {maxApplications}</span>
                         </span>
                         <span className="text-xs text-[#636366]">applied</span>
                     </div>
@@ -98,7 +110,7 @@ const ApplyPage = async ({ params }) => {
                     />
                 </div>
 
-                {/* Upgrade Invitation banner when limit gets close or full */}
+                {/* Upgrade Invitation banner */}
                 <div className="flex items-center justify-between border-t border-[#1a1a1e] pt-3 mt-1 text-xs">
                     <span className="text-[#86868b]">Want unlimited applications?</span>
                     <Link href="/pricing" className="text-[#bf5af2] font-medium hover:underline flex items-center gap-1 transition-all">
@@ -113,7 +125,6 @@ const ApplyPage = async ({ params }) => {
             {/* Client Component Form Condition */}
             {!isLimitReached ? (
                 <div className="w-full flex justify-center">
-                    {/* এখানে ApplyForm এর ভেতরের কন্টেইনারের ফুল ব্যাকগ্রাউন্ড রিমুভ করে দিয়েছি যাতে লেয়ারিং সুন্দর দেখায় */}
                     <ApplyForm job={job} userEmail={user?.email} />
                 </div>
             ) : (
@@ -126,7 +137,7 @@ const ApplyPage = async ({ params }) => {
                     </div>
                     <h3 className="text-lg font-bold text-white">Application Limit Blocked</h3>
                     <p className="text-sm text-[#86868b] max-w-md mt-2 leading-relaxed">
-                        You have hit the maximum allowance of {plan.maxApplications} applications for the basic tier. Please unlock premium access to apply for this <span className="text-[#e5e5ea] font-medium">{job?.title}</span> position.
+                        You have hit the maximum allowance of {maxApplications} applications for the basic tier. Please unlock premium access to apply for this <span className="text-[#e5e5ea] font-medium">{job?.title}</span> position.
                     </p>
                     <Link href="/pricing" className="mt-6 px-6 py-3 bg-[#bf5af2] hover:bg-[#ac49dc] text-white font-semibold rounded-xl text-sm transition-all shadow-[0_4px_20px_rgba(191,90,242,0.2)]">
                         Upgrade Account Now
