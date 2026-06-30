@@ -8,21 +8,21 @@ import { getCompany } from "@/lib/action/company";
 
 export default function MyCompany({ recruiter, recruiterCompany }) {
     // 🏢 মেইন কোম্পানি স্টেট (প্রপস থেকে আসা ডাটা সরাসরি ইনিশিয়াল ভ্যালু হিসেবে সেট)
-    const [company, setCompany] = useState(recruiterCompany); 
-    
+    const [company, setCompany] = useState(recruiterCompany);
+
     // UI কন্ট্রোল এবং লোডিং স্টেটস
     const [isEditing, setIsEditing] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
-    
+
     // সিলেক্টেড ভ্যালু স্টেটস (এডিটিং মোডের জন্য)
     const [industry, setIndustry] = useState("");
     const [employeeCount, setEmployeeCount] = useState("");
-    
+
     // ইমেজ প্রিভিউ স্টেট
     const [imagePreview, setImagePreview] = useState(null);
 
     // 🔑 আপনার ImgBB API Key
-    const IMGBB_API_KEY = process.env.NEXT_PUBLIC_LOGO_URL; 
+    const IMGBB_API_KEY = process.env.NEXT_PUBLIC_LOGO_URL;
 
     // ✏️ ফর্ম ওপেন বা এডিট মোড টগল করার হ্যান্ডলার
     const handleOpenEdit = () => {
@@ -62,7 +62,7 @@ export default function MyCompany({ recruiter, recruiterCompany }) {
 
             try {
                 toast.loading("Uploading logo to ImgBB...", { id: "imgbb-upload" });
-                
+
                 const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
                     method: "POST",
                     body: imgFormData,
@@ -79,7 +79,7 @@ export default function MyCompany({ recruiter, recruiterCompany }) {
                 console.error(error);
                 toast.error("Image upload failed.", { id: "imgbb-upload" });
                 setSubmitLoading(false);
-                return; 
+                return;
             }
         }
 
@@ -91,15 +91,17 @@ export default function MyCompany({ recruiter, recruiterCompany }) {
             employeeCount: employeeCount,
             logo: finalLogoUrl,
             description: formData.get("description")?.trim(),
-            status: company?.status || "pending", 
+            status: company?.status || "pending",
             recruiterId: recruiter?.id
         };
-        
+        setCompany(companyPayload);
+
         try {
             const payload = await getCompany(companyPayload);
 
             if (payload?.InsertedId || payload) {
-                setCompany(companyPayload); 
+                const savedCompany = { ...company, _id: payload.InsertedId }
+                setCompany(savedCompany);
                 toast.success(company ? "Company profile updated!" : "Company registered successfully!");
                 setIsEditing(false);
             } else {
@@ -123,7 +125,7 @@ export default function MyCompany({ recruiter, recruiterCompany }) {
         switch (status) {
             case "approved": return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
             case "rejected": return "bg-rose-500/10 text-rose-400 border-rose-500/20";
-            default: return "bg-amber-500/10 text-amber-400 border-amber-500/20"; 
+            default: return "bg-amber-500/10 text-amber-400 border-amber-500/20";
         }
     };
 
@@ -236,12 +238,12 @@ export default function MyCompany({ recruiter, recruiterCompany }) {
                                     ) : (
                                         <FiImage className="text-gray-500 mr-2 shrink-0" />
                                     )}
-                                    <input 
-                                        type="file" 
-                                        name="logoFile" 
+                                    <input
+                                        type="file"
+                                        name="logoFile"
                                         accept="image/*"
                                         onChange={handleImageChange}
-                                        className="w-full h-full bg-transparent text-gray-400 text-[13px] file:mr-3 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-zinc-800 file:text-gray-300 hover:file:bg-zinc-700 file:cursor-pointer pt-2.5 outline-none" 
+                                        className="w-full h-full bg-transparent text-gray-400 text-[13px] file:mr-3 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-zinc-800 file:text-gray-300 hover:file:bg-zinc-700 file:cursor-pointer pt-2.5 outline-none"
                                     />
                                 </div>
                             </div>

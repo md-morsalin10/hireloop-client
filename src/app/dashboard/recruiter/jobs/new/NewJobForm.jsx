@@ -4,7 +4,7 @@ import React, { useState } from "react";
 // HeroUI v3 Components
 import { TextField, Input, TextArea, Select, Label, ListBox, Button, Switch } from "@heroui/react";
 // Icons
-import { FiBriefcase, FiDollarSign, FiMapPin, FiCalendar, FiClock, FiChevronDown, FiAlertCircle } from "react-icons/fi";
+import { FiBriefcase, FiDollarSign, FiMapPin, FiCalendar, FiChevronDown, FiAlertCircle, FiEye, FiLock } from "react-icons/fi";
 import { createJob } from "@/lib/action/jobs";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation"; 
@@ -21,20 +21,15 @@ export default function NewJobForm({ company }) {
     const [jobType, setJobType] = useState("");
     const [currency, setCurrency] = useState("USD");
 
+    const isApproved = company?.status === "approved";
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // কোম্পানি পেন্ডিং বা অ্যাপ্রুভড না থাকলে অ্যালার্ট বা টোস্ট দেখাবে
-        // if (company?.status !== "approved") {
-        //     toast.error("Your company is not approved to post jobs yet! Current status: " + (company?.status || "unknown"));
-        //     return;
-        // }
-
-        // লগইনড রিক্রুটারের কোম্পানির আইডি না থাকলে ব্যাকএন্ডে সাবমিট করতে দিবে না
-        // if (!company?._id) {
-        //     toast.error("No associated company found for your account!");
-        //     return;
-        // }
+        if (!isApproved) {
+            toast.error("Your company is not approved to post jobs yet!");
+            return;
+        }
 
         setLoading(true);
         const formData = new FormData(e.target);
@@ -52,10 +47,10 @@ export default function NewJobForm({ company }) {
             responsibilities: formData.get("responsibilities")?.trim(),
             requirements: formData.get("requirements")?.trim(),
             benefits: formData.get("benefits")?.trim(),
-            companyId: company._id,             
+            companyId: company?._id,             
             companyName: company?.name || "",
             companyLogo: company?.logo || "",
-            status: "active",
+            status: company?.status || "pending",
             isPublic: true,
         };
 
@@ -79,7 +74,7 @@ export default function NewJobForm({ company }) {
             console.error(error);
             toast.error("An error occurred. Please try again.");
         } finally {
-            setLoading(false);
+            loading(false);
         }
 
         if (isSuccess) {
@@ -87,39 +82,77 @@ export default function NewJobForm({ company }) {
         }
     };
 
-    const labelClass = "text-gray-400 font-medium text-[13px] mb-1 font-sans block";
-    const inputGroupClass = "w-full flex items-center px-3 bg-[#1A1A1A] border border-white/5 hover:border-white/10 focus-within:!border-white/20 rounded-xl h-12 transition-all";
-    const nativeInputClass = "w-full h-full bg-transparent text-white placeholder:text-gray-600 text-[14px] outline-none border-none";
-    const selectTriggerClass = "w-full flex items-center justify-between px-3 bg-[#1A1A1A] border border-white/5 hover:border-white/10 rounded-xl h-12 text-left text-[14px] text-white transition-all outline-none focus:border-white/20";
+    const labelClass = "text-[11px] font-bold uppercase tracking-widest text-[#86868b] mb-1.5 block";
+    const inputGroupClass = "w-full flex items-center px-3.5 bg-[#121214] border border-[#222226] focus-within:!border-[#bf5af2] focus-within:ring-1 focus-within:ring-[#bf5af2]/30 rounded-xl h-12 transition-all duration-200";
+    const nativeInputClass = "w-full h-full bg-transparent text-[#f5f5f7] placeholder:text-[#48484a] text-sm outline-none border-none";
+    const selectTriggerClass = "w-full flex items-center justify-between px-3.5 bg-[#121214] border border-[#222226] focus:border-[#bf5af2] rounded-xl h-12 text-left text-sm text-[#f5f5f7] transition-all outline-none";
 
+    // =================IF NOT APPROVED: SHOW WARNING BOX ONLY =================
+    if (!isApproved) {
+        return (
+            <div className="w-full max-w-2xl mx-auto bg-[#0a0a0c] border border-[#1a1a1e] rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.8)] overflow-hidden font-sans select-none my-12 p-8 text-center flex flex-col items-center justify-center min-h-[400px]">
+                <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-6 animate-pulse">
+                    <FiLock className="text-2xl" />
+                </div>
+                
+                <h2 className="text-xl font-bold tracking-tight text-white mb-2">Workspace Approval Required</h2>
+                
+                <p className="text-sm text-zinc-400 max-w-md mx-auto mb-4 leading-relaxed">
+                    Your company workspace <span className="text-amber-400 font-semibold">({company?.name || "Pending Workspace"})</span> is currently <span className="text-amber-400 underline font-medium capitalize">{company?.status || "pending"}</span>.
+                </p>
+                
+                <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-8 leading-relaxed">
+                    You cannot post any job offers until an administrator reviews and approves your workspace application.
+                </p>
+
+                <div className="flex gap-4">
+                    <Button
+                        type="button"
+                        onClick={() => router.back()}
+                        className="bg-transparent border border-[#222226] hover:bg-[#121214] text-zinc-400 hover:text-white rounded-xl px-6 h-11 text-xs font-semibold transition-colors duration-200"
+                    >
+                        Go Back
+                    </Button>
+                    <Button
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 rounded-xl px-6 h-11 text-xs font-semibold transition-colors duration-200"
+                    >
+                        Check Status
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // ================= IF APPROVED: RENDER FORM =================
     return (
-        <div className="w-full max-w-4xl mx-auto bg-[#121212] border border-white/5 rounded-2xl overflow-hidden font-sans select-none my-6">
+        <div className="w-full max-w-4xl mx-auto bg-[#0a0a0c] border border-[#1a1a1e] rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.8)] overflow-hidden font-sans select-none my-8">
 
             {/* হেডার */}
-            <div className="p-6 border-b border-white/5">
-                <h1 className="text-xl font-semibold tracking-wide text-white">Post a New Job</h1>
-                <p className="text-xs text-gray-500 mt-1">
-                    Posting as: <span className="text-gray-300 font-medium">{company?.name || "Loading..."}</span>
-                </p>
+            <div className="p-8 border-b border-[#1a1a1e] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">Post a New Job</h1>
+                    <p className="text-xs text-zinc-500 mt-1">
+                        Workspace: <span className="text-zinc-300 font-medium">{company?.name || "Loading..."}</span>
+                    </p>
+                </div>
+                
+                {/* Status Badge */}
+                <div className="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide border self-start sm:self-center capitalize bg-emerald-500/10 border-emerald-500/30 text-emerald-400">
+                    Status: Approved
+                </div>
             </div>
 
-            {/* কোম্পানি স্ট্যাটাস পেন্ডিং হলে ওয়ার্নিং নোটিশ */}
-            {company && company.status !== "approved" && (
-                <div className="mx-6 mt-6 flex items-center gap-3 bg-amber-500/5 border border-amber-500/10 text-amber-500/80 p-3.5 rounded-xl text-xs">
-                    <FiAlertCircle className="text-sm shrink-0" />
-                    <span>Your company workspace is current <strong>{company.status}</strong>. You can draft the form, but publishing requires active admin approval.</span>
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-8">
+            <form onSubmit={handleSubmit} className="p-8 space-y-10">
 
                 {/* ================= SECTION 1: JOB INFO ================= */}
-                <div className="space-y-4">
-                    <h3 className="text-sm font-semibold tracking-wider text-gray-400 uppercase flex items-center gap-2">
-                        <FiBriefcase /> Job Info
+                <div className="space-y-5">
+                    <h3 className="text-xs font-bold tracking-widest text-[#bf5af2] uppercase flex items-center gap-2 pb-2 border-b border-[#1a1a1e]">
+                        <FiBriefcase className="text-sm" /> Job Information
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <TextField isRequired>
                             <Label className={labelClass}>Job Title</Label>
                             <div className={inputGroupClass}>
@@ -132,39 +165,39 @@ export default function NewJobForm({ company }) {
                         </TextField>
 
                         <div className="flex flex-col">
-                            <Label className={labelClass}>Job Category <span className="text-red-500">*</span></Label>
+                            <Label className={labelClass}>Job Category <span className="text-red-500/70">*</span></Label>
                             <Select placeholder="Select category" value={category} onChange={setCategory}>
                                 <Select.Trigger className={selectTriggerClass}>
                                     <Select.Value />
-                                    <Select.Indicator><FiChevronDown className="text-gray-500" /></Select.Indicator>
+                                    <Select.Indicator><FiChevronDown className="text-zinc-500" /></Select.Indicator>
                                 </Select.Trigger>
-                                <Select.Popover className="bg-[#1A1A1A] border border-white/5 rounded-xl text-white">
-                                    <ListBox>
-                                        <ListBox.Item id="technology" textValue="Technology" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Technology</ListBox.Item>
-                                        <ListBox.Item id="design" textValue="Design" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Design</ListBox.Item>
-                                        <ListBox.Item id="marketing" textValue="Marketing" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Marketing</ListBox.Item>
-                                        <ListBox.Item id="management" textValue="Management" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Management</ListBox.Item>
+                                <Select.Popover className="bg-[#121214] border border-[#222226] rounded-xl text-white shadow-xl">
+                                    <ListBox className="p-1">
+                                        <ListBox.Item id="technology" textValue="Technology" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Technology</ListBox.Item>
+                                        <ListBox.Item id="design" textValue="Design" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Design</ListBox.Item>
+                                        <ListBox.Item id="marketing" textValue="Marketing" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Marketing</ListBox.Item>
+                                        <ListBox.Item id="management" textValue="Management" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Management</ListBox.Item>
                                     </ListBox>
                                 </Select.Popover>
                             </Select>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="flex flex-col">
-                            <Label className={labelClass}>Job Type <span className="text-red-500">*</span></Label>
+                            <Label className={labelClass}>Job Type <span className="text-red-500/70">*</span></Label>
                             <Select placeholder="Select job type" value={jobType} onChange={setJobType}>
                                 <Select.Trigger className={selectTriggerClass}>
                                     <Select.Value />
-                                    <Select.Indicator><FiChevronDown className="text-gray-500" /></Select.Indicator>
+                                    <Select.Indicator><FiChevronDown className="text-zinc-500" /></Select.Indicator>
                                 </Select.Trigger>
-                                <Select.Popover className="bg-[#1A1A1A] border border-white/5 rounded-xl text-white">
-                                    <ListBox>
-                                        <ListBox.Item id="Full-time" textValue="Full-time" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Full-time</ListBox.Item>
-                                        <ListBox.Item id="Part-time" textValue="Part-time" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Part-time</ListBox.Item>
-                                        <ListBox.Item id="Remote" textValue="Remote" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Remote</ListBox.Item>
-                                        <ListBox.Item id="Contract" textValue="Contract" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Contract</ListBox.Item>
-                                        <ListBox.Item id="Internship" textValue="Internship" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">Internship</ListBox.Item>
+                                <Select.Popover className="bg-[#121214] border border-[#222226] rounded-xl text-white shadow-xl">
+                                    <ListBox className="p-1">
+                                        <ListBox.Item id="Full-time" textValue="Full-time" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Full-time</ListBox.Item>
+                                        <ListBox.Item id="Part-time" textValue="Part-time" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Part-time</ListBox.Item>
+                                        <ListBox.Item id="Remote" textValue="Remote" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Remote</ListBox.Item>
+                                        <ListBox.Item id="Contract" textValue="Contract" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Contract</ListBox.Item>
+                                        <ListBox.Item id="Internship" textValue="Internship" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">Internship</ListBox.Item>
                                     </ListBox>
                                 </Select.Popover>
                             </Select>
@@ -176,21 +209,21 @@ export default function NewJobForm({ company }) {
                                 <Input
                                     name="deadline"
                                     type="date"
-                                    className={`${nativeInputClass} scheme-dark`}
+                                    className={`${nativeInputClass} scheme-dark cursor-pointer text-zinc-300`}
                                 />
-                                <FiCalendar className="text-gray-500 ml-2 pointer-events-none" />
+                                <FiCalendar className="text-zinc-500 ml-2 pointer-events-none" />
                             </div>
                         </TextField>
                     </div>
                 </div>
 
                 {/* ================= SECTION 2: SALARY & LOCATION ================= */}
-                <div className="space-y-4">
-                    <h3 className="text-sm font-semibold tracking-wider text-gray-400 uppercase flex items-center gap-2">
-                        <FiDollarSign /> Salary & Location
+                <div className="space-y-5">
+                    <h3 className="text-xs font-bold tracking-widest text-[#bf5af2] uppercase flex items-center gap-2 pb-2 border-b border-[#1a1a1e]">
+                        <FiDollarSign className="text-sm" /> Salary & Position Location
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <TextField isRequired>
                             <Label className={labelClass}>Min Salary</Label>
                             <div className={inputGroupClass}>
@@ -216,18 +249,18 @@ export default function NewJobForm({ company }) {
                         </TextField>
 
                         <div className="flex flex-col">
-                            <Label className={labelClass}>Currency <span className="text-red-500">*</span></Label>
+                            <Label className={labelClass}>Currency <span className="text-red-500/70">*</span></Label>
                             <Select placeholder="USD" value={currency} onChange={setCurrency}>
                                 <Select.Trigger className={selectTriggerClass}>
                                     <Select.Value />
-                                    <Select.Indicator><FiChevronDown className="text-gray-500" /></Select.Indicator>
+                                    <Select.Indicator><FiChevronDown className="text-zinc-500" /></Select.Indicator>
                                 </Select.Trigger>
-                                <Select.Popover className="bg-[#1A1A1A] border border-white/5 rounded-xl text-white">
-                                    <ListBox>
-                                        <ListBox.Item id="USD" textValue="USD ($)" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">USD ($)</ListBox.Item>
-                                        <ListBox.Item id="EUR" textValue="EUR (€)" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">EUR (€)</ListBox.Item>
-                                        <ListBox.Item id="BDT" textValue="BDT (৳)" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">BDT (৳)</ListBox.Item>
-                                        <ListBox.Item id="GBP" textValue="GBP (£)" className="hover:bg-white/5 p-2 rounded-lg cursor-pointer text-sm">GBP (£)</ListBox.Item>
+                                <Select.Popover className="bg-[#121214] border border-[#222226] rounded-xl text-white shadow-xl">
+                                    <ListBox className="p-1">
+                                        <ListBox.Item id="USD" textValue="USD ($)" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">USD ($)</ListBox.Item>
+                                        <ListBox.Item id="EUR" textValue="EUR (€)" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">EUR (€)</ListBox.Item>
+                                        <ListBox.Item id="BDT" textValue="BDT (৳)" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">BDT (৳)</ListBox.Item>
+                                        <ListBox.Item id="GBP" textValue="GBP (£)" className="hover:bg-zinc-900 p-2.5 rounded-lg cursor-pointer text-sm text-zinc-300 hover:text-white">GBP (£)</ListBox.Item>
                                     </ListBox>
                                 </Select.Popover>
                             </Select>
@@ -235,12 +268,12 @@ export default function NewJobForm({ company }) {
                     </div>
 
                     {/* Location & Remote Switch Row */}
-                    <div className="flex flex-col md:flex-row items-start md:items-end gap-6 bg-[#161616] p-4 rounded-xl border border-white/5">
+                    <div className="flex flex-col md:flex-row items-start md:items-end gap-6 bg-[#121214] p-5 rounded-2xl border border-[#222226]">
                         <div className="flex-1 w-full">
                             <TextField isRequired={!isRemote}>
-                                <Label className={labelClass}>Location</Label>
-                                <div className={`${inputGroupClass} ${isRemote ? "opacity-40 pointer-events-none bg-zinc-900" : ""}`}>
-                                    <FiMapPin className="text-gray-500 mr-2" />
+                                <Label className={labelClass}>Location Base</Label>
+                                <div className={`${inputGroupClass} ${isRemote ? "opacity-30 bg-[#161619] border-[#1c1c1f]" : ""}`}>
+                                    <FiMapPin className="text-zinc-500 mr-2" />
                                     <Input
                                         name="location"
                                         placeholder="City, Country"
@@ -263,8 +296,8 @@ export default function NewJobForm({ company }) {
                                     <Switch.Thumb />
                                 </Switch.Control>
                                 <Switch.Content onClick={() => setIsRemote(!isRemote)}>
-                                    <span className="text-sm font-medium text-gray-300 ml-2 cursor-pointer select-none">
-                                        Remote Job
+                                    <span className="text-sm font-medium text-zinc-300 ml-2 cursor-pointer select-none">
+                                        Remote-friendly Job
                                     </span>
                                 </Switch.Content>
                             </Switch>
@@ -273,56 +306,56 @@ export default function NewJobForm({ company }) {
                 </div>
 
                 {/* ================= SECTION 3: JOB DESCRIPTION ================= */}
-                <div className="space-y-4">
-                    <h3 className="text-sm font-semibold tracking-wider text-gray-400 uppercase flex items-center gap-2">
-                        <FiClock /> Detailed Content
+                <div className="space-y-5">
+                    <h3 className="text-xs font-bold tracking-widest text-[#bf5af2] uppercase flex items-center gap-2 pb-2 border-b border-[#1a1a1e]">
+                        <FiEye className="text-sm" /> Job Content & Details
                     </h3>
 
                     <TextField isRequired>
                         <Label className={labelClass}>Job Description</Label>
-                        <div className="w-full bg-[#1A1A1A] border border-white/5 hover:border-white/10 focus-within:!border-white/20 rounded-xl p-3 transition-all">
+                        <div className="w-full bg-[#121214] border border-[#222226] focus-within:!border-[#bf5af2] focus-within:ring-1 focus-within:ring-[#bf5af2]/30 rounded-xl p-3.5 transition-all duration-200">
                             <TextArea
                                 name="description"
-                                placeholder="Provide a general overview of the job role..."
-                                rows={3}
-                                className="w-full bg-transparent text-white placeholder:text-gray-600 text-[14px] outline-none resize-y"
+                                placeholder="Provide a general high-level overview of the job role and department expectations..."
+                                rows={4}
+                                className="w-full bg-transparent text-[#f5f5f7] placeholder:text-[#48484a] text-sm outline-none resize-y min-h-[80px]"
                             />
                         </div>
                     </TextField>
 
                     <TextField isRequired>
                         <Label className={labelClass}>Responsibilities</Label>
-                        <div className="w-full bg-[#1A1A1A] border border-white/5 hover:border-white/10 focus-within:!border-white/20 rounded-xl p-3 transition-all">
+                        <div className="w-full bg-[#121214] border border-[#222226] focus-within:!border-[#bf5af2] focus-within:ring-1 focus-within:ring-[#bf5af2]/30 rounded-xl p-3.5 transition-all duration-200">
                             <TextArea
                                 name="responsibilities"
-                                placeholder="List day-to-day responsibilities (one per line)..."
-                                rows={3}
-                                className="w-full bg-transparent text-white placeholder:text-gray-600 text-[14px] outline-none resize-y"
+                                placeholder="List core day-to-day responsibilities (preferably one statement per line)..."
+                                rows={4}
+                                className="w-full bg-transparent text-[#f5f5f7] placeholder:text-[#48484a] text-sm outline-none resize-y min-h-[80px]"
                             />
                         </div>
                     </TextField>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <TextField isRequired>
-                            <Label className={labelClass}>Requirements</Label>
-                            <div className="w-full bg-[#1A1A1A] border border-white/5 hover:border-white/10 focus-within:!border-white/20 rounded-xl p-3 transition-all">
+                            <Label className={labelClass}>Core Requirements</Label>
+                            <div className="w-full bg-[#121214] border border-[#222226] focus-within:!border-[#bf5af2] focus-within:ring-1 focus-within:ring-[#bf5af2]/30 rounded-xl p-3.5 transition-all duration-200">
                                 <TextArea
                                     name="requirements"
-                                    placeholder="Required skills, experience, degrees..."
-                                    rows={3}
-                                    className="w-full bg-transparent text-white placeholder:text-gray-600 text-[14px] outline-none resize-y"
+                                    placeholder="Required skills, experience frameworks, degrees..."
+                                    rows={4}
+                                    className="w-full bg-transparent text-[#f5f5f7] placeholder:text-[#48484a] text-sm outline-none resize-y min-h-[80px]"
                                 />
                             </div>
                         </TextField>
 
                         <TextField>
-                            <Label className={labelClass}>Benefits (Optional)</Label>
-                            <div className="w-full bg-[#1A1A1A] border border-white/5 hover:border-white/10 focus-within:!border-white/20 rounded-xl p-3 transition-all">
+                            <Label className={labelClass}>Benefits & Perks (Optional)</Label>
+                            <div className="w-full bg-[#121214] border border-[#222226] focus-within:!border-[#bf5af2] focus-within:ring-1 focus-within:ring-[#bf5af2]/30 rounded-xl p-3.5 transition-all duration-200">
                                 <TextArea
                                     name="benefits"
-                                    placeholder="e.g. Health insurance, Remote allowance..."
-                                    rows={3}
-                                    className="w-full bg-transparent text-white placeholder:text-gray-600 text-[14px] outline-none resize-y"
+                                    placeholder="e.g., Global remote allowances, Health coverage, Learning budget..."
+                                    rows={4}
+                                    className="w-full bg-transparent text-[#f5f5f7] placeholder:text-[#48484a] text-sm outline-none resize-y min-h-[80px]"
                                 />
                             </div>
                         </TextField>
@@ -330,20 +363,20 @@ export default function NewJobForm({ company }) {
                 </div>
 
                 {/* ================= FOOTER / ACTION BUTTONS ================= */}
-                <div className="pt-4 border-t border-white/5 flex justify-end gap-3">
+                <div className="pt-6 border-t border-[#1a1a1e] flex justify-end gap-4">
                     <Button
                         type="button"
                         onClick={() => router.back()}
-                        className="bg-transparent border border-white/5 hover:border-white/10 text-gray-300 rounded-xl px-6 h-11 text-xs font-semibold"
+                        className="bg-transparent border border-[#222226] hover:bg-[#121214] text-zinc-400 hover:text-white rounded-xl px-6 h-12 text-xs font-semibold transition-colors duration-200"
                     >
                         Cancel
                     </Button>
                     <Button
                         type="submit"
-                        isLoading={loading}
-                        className="bg-white text-black font-semibold text-xs rounded-xl px-8 h-11 hover:bg-gray-200 transition-colors"
+                        disabled={loading}
+                        className="font-semibold text-xs rounded-xl px-8 h-12 transition-all duration-250 bg-[#bf5af2] hover:bg-[#ac49dc] text-white shadow-[0_4px_24px_rgba(191,90,242,0.25)] active:scale-[0.98]"
                     >
-                        Publish Job
+                        {loading ? "Publishing Job..." : "Publish Job"}
                     </Button>
                 </div>
 

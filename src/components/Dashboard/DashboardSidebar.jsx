@@ -1,15 +1,18 @@
 
 import { getUserSeason } from "@/lib/core/session";
-import { Bars, Bookmark, CirclePlus, CreditCard, Envelope, FileText, Gear, House, Magnifier } from "@gravity-ui/icons";
+import { Bars, Bookmark, BriefcaseFill, CirclePlus, CreditCard, Envelope, FileText, Gear, House, LayoutCells, Magnifier } from "@gravity-ui/icons";
 import { Button, Drawer } from "@heroui/react";
 import Link from "next/link";
+import { BiBuilding } from "react-icons/bi";
+import { FaPeopleArrows } from "react-icons/fa";
+import { FiSettings } from "react-icons/fi";
 import { MdDashboardCustomize } from "react-icons/md";
 import { RiProfileLine } from "react-icons/ri";
 
 export async function DashboardSidebar() {
 
     const user = await getUserSeason()
-    
+
     const recruiterItems = [
         { icon: House, href: "/dashboard/recruiter", label: "Home" },
         { icon: Magnifier, href: "/dashboard/recruiter/jobs", label: "Jobs" },
@@ -17,6 +20,15 @@ export async function DashboardSidebar() {
         { icon: RiProfileLine, href: "/dashboard/recruiter/company", label: "Company Profile" },
         { icon: Envelope, href: "/dashboard/recruiter/messages", label: "Messages" },
         { icon: Gear, href: "/dashboard/recruiter/settings", label: "Settings" },
+    ];
+
+    const adminItems = [
+        { icon: LayoutCells, href: "/dashboard/admin", label: "Dashboard" },
+        { icon: FaPeopleArrows, href: "/dashboard/admin/users", label: "Users" },
+        { icon: BiBuilding, href: "/dashboard/admin/companies", label: "Companies" },
+        { icon: BriefcaseFill, href: "/dashboard/admin/jobs", label: "Jobs" },
+        { icon: CreditCard, href: "/dashboard/admin/payments", label: "Payments" },
+        { icon: FiSettings, href: "/dashboard/admin/settings", label: "Settings" }
     ];
 
     const seekerNavItems = [
@@ -36,7 +48,7 @@ export async function DashboardSidebar() {
             label: "Saved Jobs"
         },
         {
-            icon: FileText, // অথবা Briefcase / Description আইকন Applications এর জন্য
+            icon: FileText, 
             href: "/dashboard/seeker/applications",
             label: "Applications"
         },
@@ -54,7 +66,8 @@ export async function DashboardSidebar() {
 
     const navLinksMap = {
         seeker: seekerNavItems,
-        recruiter: recruiterItems
+        recruiter: recruiterItems,
+        admin: adminItems
     }
 
     const navItems = navLinksMap[user?.role]

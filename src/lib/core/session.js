@@ -13,7 +13,11 @@ export const getUserSeason = async () => {
 
 export const requireRole =async (role)=>{
     const user = await getUserSeason()
+    if(!user){
+        redirect("/login")
+    }
+
     if(user?.role !== role){
-       return redirect("/unauthorized")
+     redirect("/unauthorized")
     }
 }

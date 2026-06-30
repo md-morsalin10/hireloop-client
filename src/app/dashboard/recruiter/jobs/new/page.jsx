@@ -6,6 +6,7 @@ const NewJobPage = async () => {
     const company = await getLoggedInRecruiterCompany();
     return (
         <div>
+            
             <NewJobForm company={company} />
         </div>
     );

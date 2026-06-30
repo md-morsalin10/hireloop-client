@@ -38,7 +38,7 @@ const ApplyPage = async ({ params }) => {
 
     // API ডাটা ফেচিং
     const job = await getJobById(id);
-    const applicant = await getApplicationsByApplicantId(user?.email);
+    const applicant = await getApplicationsByApplicantId(user?.id);
     const planData = await getPlanById(user?.plan || "seeker_free");
 
     console.log("Applicant Data:", applicant);
@@ -125,7 +125,7 @@ const ApplyPage = async ({ params }) => {
             {/* Client Component Form Condition */}
             {!isLimitReached ? (
                 <div className="w-full flex justify-center">
-                    <ApplyForm job={job} userEmail={user?.email} />
+                    <ApplyForm job={job} user={user} />
                 </div>
             ) : (
                 /* Limit Exceeded Premium Block */
